@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:wallyapp/config/config.dart';
 
 class SignInPage extends StatefulWidget {
@@ -7,6 +9,8 @@ class SignInPage extends StatefulWidget {
 }
 
 class _SignInPageState extends State<SignInPage> {
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,7 +51,9 @@ class _SignInPageState extends State<SignInPage> {
                 width: MediaQuery.of(context).size.width,
                 margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    _signIn();
+                  },
                   child: Container(
                       width: MediaQuery.of(context).size.width,
                       padding:
@@ -70,5 +76,18 @@ class _SignInPageState extends State<SignInPage> {
         ),
       ),
     );
+  }
+
+  void _signIn() async {
+    final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.getCredential(
+        idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
+
+    final FirebaseUser user =
+        (await _auth.signInWithCredential(credential)).user;
+    print("Signed in " + user.displayName);
   }
 }
