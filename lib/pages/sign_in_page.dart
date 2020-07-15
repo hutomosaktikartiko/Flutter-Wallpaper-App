@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -11,6 +12,8 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  final Firestore _db = Firestore.instance;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,15 +82,27 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   void _signIn() async {
-    final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
-    final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
+    try {
+      final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
-    final AuthCredential credential = GoogleAuthProvider.getCredential(
-        idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
+      final AuthCredential credential = GoogleAuthProvider.getCredential(
+          idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
 
-    final FirebaseUser user =
-        (await _auth.signInWithCredential(credential)).user;
-    print("Signed in " + user.displayName);
+      final FirebaseUser user =
+          (await _auth.signInWithCredential(credential)).user;
+      print("Signed in " + user.displayName);
+
+      _db.collection("user").document(user.uid).setData({
+        "displayName": user.displayName,
+        "email": user.email,
+        "uid": user.uid,
+        "photoUrl": user.photoUrl,
+        "lastSignIn": DateTime.now(),
+      }, merge: true);
+    } catch (e) {
+      print(e.message);
+    }
   }
 }
