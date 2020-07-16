@@ -16,7 +16,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Home"),
+        title: Text("WallyApp"),
       ),
       body: _pages[_selectedPageIndex],
       bottomNavigationBar: BottomNavigationBar(

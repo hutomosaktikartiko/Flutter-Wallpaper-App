@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
@@ -24,6 +25,18 @@ class _ExplorePageState extends State<ExplorePage> {
             SizedBox(
               height: 20,
             ),
+            Container(
+              alignment: Alignment.topLeft,
+              margin: EdgeInsets.only(top: 5, left: 20, bottom: 20),
+              child: Text(
+                "Explore",
+                textAlign: TextAlign.start,
+                style: TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey),
+              ),
+            ),
             StaggeredGridView.countBuilder(
               crossAxisCount: 2,
               shrinkWrap: true,
@@ -35,8 +48,13 @@ class _ExplorePageState extends State<ExplorePage> {
               padding: EdgeInsets.symmetric(horizontal: 15),
               itemBuilder: (ctx, index) {
                 return ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image(image: NetworkImage(image[index])));
+                  borderRadius: BorderRadius.circular(10),
+                  // child: Image(image: NetworkImage(image[index]))
+                  child: CachedNetworkImage(
+                      placeholder: (ctx, url) =>
+                          Image(image: AssetImage("assets/placeholder.jpg")),
+                      imageUrl: image[index]),
+                );
               },
             ),
           ],
