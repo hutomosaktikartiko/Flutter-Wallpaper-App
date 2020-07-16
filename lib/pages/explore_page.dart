@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:wallyapp/pages/wallpaper_detail_page.dart';
 
 class ExplorePage extends StatefulWidget {
   @override
@@ -47,13 +48,26 @@ class _ExplorePageState extends State<ExplorePage> {
               mainAxisSpacing: 20,
               padding: EdgeInsets.symmetric(horizontal: 15),
               itemBuilder: (ctx, index) {
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  // child: Image(image: NetworkImage(image[index]))
-                  child: CachedNetworkImage(
-                      placeholder: (ctx, url) =>
-                          Image(image: AssetImage("assets/placeholder.jpg")),
-                      imageUrl: image[index]),
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => WallpaperDetailPage(
+                                  image: image[index],
+                                )));
+                  },
+                  child: Hero(
+                    tag: image[index],
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      // child: Image(image: NetworkImage(image[index]))
+                      child: CachedNetworkImage(
+                          placeholder: (ctx, url) => Image(
+                              image: AssetImage("assets/placeholder.jpg")),
+                          imageUrl: image[index]),
+                    ),
+                  ),
                 );
               },
             ),
