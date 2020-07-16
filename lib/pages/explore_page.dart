@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class ExplorePage extends StatefulWidget {
   @override
@@ -23,17 +24,20 @@ class _ExplorePageState extends State<ExplorePage> {
             SizedBox(
               height: 20,
             ),
-            GridView.count(
+            StaggeredGridView.countBuilder(
               crossAxisCount: 2,
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
-              childAspectRatio: 9 / 16,
-              children: image.map((e) {
-                return Image(
-                  image: NetworkImage(e),
-                  fit: BoxFit.cover,
-                );
-              }).toList(),
+              staggeredTileBuilder: (int index) => StaggeredTile.fit(1),
+              itemCount: image.length,
+              crossAxisSpacing: 20,
+              mainAxisSpacing: 20,
+              padding: EdgeInsets.symmetric(horizontal: 15),
+              itemBuilder: (ctx, index) {
+                return ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image(image: NetworkImage(image[index])));
+              },
             ),
           ],
         ),
