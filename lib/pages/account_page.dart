@@ -38,59 +38,61 @@ class _AccountPageState extends State<AccountPage> {
     return SingleChildScrollView(
       child: Container(
         width: MediaQuery.of(context).size.width,
-        child: Column(
-          children: <Widget>[
-            SizedBox(
-              height: 20,
-            ),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(100),
-              child: FadeInImage(
-                width: 200,
-                height: 200,
-                placeholder: AssetImage("assets/placeholder.jpg"),
-                image: NetworkImage("${_user.photoUrl}"),
-                fit: BoxFit.cover,
-              ),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Text("${_user.displayName}"),
-            RaisedButton(
-              onPressed: () {
-                _auth.signOut();
-              },
-              child: Text("Logout"),
-            ),
-            SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: _user != null
+            ? Column(
                 children: <Widget>[
-                  Text("My Wallpapers"),
-                  IconButton(icon: Icon(Icons.add), onPressed: () {})
+                  SizedBox(
+                    height: 20,
+                  ),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(100),
+                    child: FadeInImage(
+                      width: 200,
+                      height: 200,
+                      placeholder: AssetImage("assets/placeholder.jpg"),
+                      image: NetworkImage("${_user.photoUrl}"),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Text("${_user.displayName}"),
+                  RaisedButton(
+                    onPressed: () {
+                      _auth.signOut();
+                    },
+                    child: Text("Logout"),
+                  ),
+                  SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text("My Wallpapers"),
+                        IconButton(icon: Icon(Icons.add), onPressed: () {})
+                      ],
+                    ),
+                  ),
+                  StaggeredGridView.countBuilder(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    staggeredTileBuilder: (int index) => StaggeredTile.fit(1),
+                    itemCount: image.length,
+                    crossAxisSpacing: 20,
+                    mainAxisSpacing: 20,
+                    padding: EdgeInsets.symmetric(horizontal: 15),
+                    itemBuilder: (ctx, index) {
+                      return ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image(image: NetworkImage(image[index])));
+                    },
+                  ),
                 ],
-              ),
-            ),
-            StaggeredGridView.countBuilder(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              staggeredTileBuilder: (int index) => StaggeredTile.fit(1),
-              itemCount: image.length,
-              crossAxisSpacing: 20,
-              mainAxisSpacing: 20,
-              padding: EdgeInsets.symmetric(horizontal: 15),
-              itemBuilder: (ctx, index) {
-                return ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image(image: NetworkImage(image[index])));
-              },
-            ),
-          ],
-        ),
+              )
+            : LinearProgressIndicator(),
       ),
     );
   }
