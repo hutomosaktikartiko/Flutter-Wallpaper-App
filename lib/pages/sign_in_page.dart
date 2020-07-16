@@ -94,7 +94,7 @@ class _SignInPageState extends State<SignInPage> {
           (await _auth.signInWithCredential(credential)).user;
       print("Signed in " + user.displayName);
 
-      _db.collection("user").document(user.uid).setData({
+      _db.collection("users").document(user.uid).setData({
         "displayName": user.displayName,
         "email": user.email,
         "uid": user.uid,
