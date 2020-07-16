@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:wallyapp/pages/add_wallpaper_page.dart';
 
 class AccountPage extends StatefulWidget {
   @override
@@ -71,7 +72,15 @@ class _AccountPageState extends State<AccountPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Text("My Wallpapers"),
-                        IconButton(icon: Icon(Icons.add), onPressed: () {})
+                        IconButton(
+                            icon: Icon(Icons.add),
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => AddWallpaperPage(),
+                                      fullscreenDialog: true));
+                            })
                       ],
                     ),
                   ),
