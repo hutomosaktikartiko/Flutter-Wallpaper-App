@@ -115,19 +115,68 @@ class _AccountPageState extends State<AccountPage> {
                                                     .data['url'],
                                               )));
                                 },
-                                child: Hero(
-                                  tag: snapshot
-                                      .data.documents[index].data['url'],
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    // child: Image(image: NetworkImage(image[index]))
-                                    child: CachedNetworkImage(
-                                        placeholder: (ctx, url) => Image(
-                                            image: AssetImage(
-                                                "assets/placeholder.jpg")),
-                                        imageUrl: snapshot
-                                            .data.documents[index].data['url']),
-                                  ),
+                                child: Stack(
+                                  children: <Widget>[
+                                    Hero(
+                                      tag: snapshot
+                                          .data.documents[index].data['url'],
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        // child: Image(image: NetworkImage(image[index]))
+                                        child: CachedNetworkImage(
+                                            placeholder: (ctx, url) => Image(
+                                                image: AssetImage(
+                                                    "assets/placeholder.jpg")),
+                                            imageUrl: snapshot.data
+                                                .documents[index].data['url']),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.delete,
+                                        color: Colors.red,
+                                      ),
+                                      onPressed: () {
+                                        showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return AlertDialog(
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            18)),
+                                                title: Text("Confirmation"),
+                                                content: Text(
+                                                    "Are your sure, you are deleting wallpaper"),
+                                                actions: <Widget>[
+                                                  RaisedButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                    child: Text("Cancel"),
+                                                  ),
+                                                  RaisedButton(
+                                                    onPressed: () {
+                                                      _db
+                                                          .collection(
+                                                              "wallpapers")
+                                                          .document(snapshot
+                                                              .data
+                                                              .documents[index]
+                                                              .documentID)
+                                                          .delete();
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                    child: Text("Delete"),
+                                                  )
+                                                ],
+                                              );
+                                            });
+                                      },
+                                    )
+                                  ],
                                 ),
                               );
                             },
