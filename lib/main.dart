@@ -42,11 +42,28 @@ class _MainPageState extends State<MainPage> {
     _firebaseMessaging.configure(
         onMessage: (Map<String, dynamic> message) async {
       print("onMessage: $message");
+      String title = message["notification"]["title"] ?? "";
+      String body = message["notification"]["body"] ?? "";
+
+      print(title);
+      print(body);
     }, onLaunch: (Map<String, dynamic> message) async {
       print("onLaunch: $message");
+      String title = message["notification"]["title"] ?? "";
+      String body = message["notification"]["body"] ?? "";
+
+      print(title);
+      print(body);
     }, onResume: (Map<String, dynamic> message) async {
       print("onResume: $message");
+      String title = message["notification"]["title"] ?? "";
+      String body = message["notification"]["body"] ?? "";
+
+      print(title);
+      print(body);
     });
+
+    _firebaseMessaging.subscribeToTopic("promotion");
     super.initState();
   }
 
