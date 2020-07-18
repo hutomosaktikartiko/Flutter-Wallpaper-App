@@ -109,10 +109,8 @@ class _AccountPageState extends State<AccountPage> {
                                       MaterialPageRoute(
                                           builder: (context) =>
                                               WallpaperDetailPage(
-                                                image: snapshot
-                                                    .data
-                                                    .documents[index]
-                                                    .data['url'],
+                                                data: snapshot
+                                                    .data.documents[index],
                                               )));
                                 },
                                 child: Stack(

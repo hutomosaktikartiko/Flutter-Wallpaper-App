@@ -67,8 +67,7 @@ class _ExplorePageState extends State<ExplorePage> {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => WallpaperDetailPage(
-                                          image: snapshot.data.documents[index]
-                                              .data['url'],
+                                          data: snapshot.data.documents[index],
                                         )));
                           },
                           child: Hero(
