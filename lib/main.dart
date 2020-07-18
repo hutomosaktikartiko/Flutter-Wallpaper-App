@@ -47,6 +47,8 @@ class _MainPageState extends State<MainPage> {
 
       print(title);
       print(body);
+
+      _showDialog(title: title, body: body);
     }, onLaunch: (Map<String, dynamic> message) async {
       print("onLaunch: $message");
       String title = message["notification"]["title"] ?? "";
@@ -54,6 +56,8 @@ class _MainPageState extends State<MainPage> {
 
       print(title);
       print(body);
+
+      _showDialog(title: title, body: body);
     }, onResume: (Map<String, dynamic> message) async {
       print("onResume: $message");
       String title = message["notification"]["title"] ?? "";
@@ -61,10 +65,33 @@ class _MainPageState extends State<MainPage> {
 
       print(title);
       print(body);
+
+      _showDialog(title: title, body: body);
     });
 
     _firebaseMessaging.subscribeToTopic("promotion");
     super.initState();
+  }
+
+  void _showDialog({String title, String body}) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            title: Text(title),
+            content: Text(body),
+            actions: <Widget>[
+              RaisedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("Dismiss"),
+              )
+            ],
+          );
+        });
   }
 
   @override
