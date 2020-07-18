@@ -18,15 +18,14 @@ class _AddWallpaperPageState extends State<AddWallpaperPage> {
 
   final ImageLabeler labeler = FirebaseVision.instance.imageLabeler();
 
+  List<String> labelInString = [];
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final Firestore _db = Firestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
   bool _isUploading = false;
   bool _isCompletedUploading = false;
-
-  List<ImageLabel> detectedLabel;
-  List<String> labelInString = [];
 
   @override
   void dispose() {
@@ -58,20 +57,22 @@ class _AddWallpaperPageState extends State<AddWallpaperPage> {
               SizedBox(
                 height: 15,
               ),
-              detectedLabel != null
+              labelInString.isNotEmpty
                   ? Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Wrap(
                         spacing: 10,
-                        children: detectedLabel.map((label) {
-                          return Chip(label: Text(label.text));
+                        children: labelInString.map((label) {
+                          return Chip(
+                            label: Text(label),
+                          );
                         }).toList(),
                       ),
                     )
                   : Container(),
               SizedBox(height: 30),
-              if (_isUploading) ...[Text('Iploading wallpaper...')],
-              if (_isCompletedUploading) ...[Text("Upload Completed...")],
+              if (_isUploading) ...[Text('Uploading wallpaper...')],
+              if (_isCompletedUploading) ...[Text("Upload Completed.")],
               SizedBox(height: 30),
               RaisedButton(
                 onPressed: () {
@@ -87,7 +88,8 @@ class _AddWallpaperPageState extends State<AddWallpaperPage> {
   }
 
   void _loadImage() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+    var image = await ImagePicker.pickImage(
+        source: ImageSource.gallery, imageQuality: 30);
 
     final FirebaseVisionImage visionImage = FirebaseVisionImage.fromFile(image);
 
@@ -99,7 +101,6 @@ class _AddWallpaperPageState extends State<AddWallpaperPage> {
     }
 
     setState(() {
-      detectedLabel = labels;
       _image = image;
     });
   }
@@ -131,6 +132,12 @@ class _AddWallpaperPageState extends State<AddWallpaperPage> {
             _isUploading = false;
           });
           event.snapshot.ref.getDownloadURL().then((url) {
+            _db.collection("wallpapers").add({
+              "url": url,
+              "date": DateTime.now(),
+              "uploaded_by": uid,
+              "tags": labelInString
+            });
             Navigator.of(context).pop();
           });
         }
