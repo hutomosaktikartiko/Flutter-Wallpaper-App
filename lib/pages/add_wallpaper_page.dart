@@ -1,7 +1,12 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_ml_vision/firebase_ml_vision.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
 
 class AddWallpaperPage extends StatefulWidget {
   @override
@@ -10,6 +15,25 @@ class AddWallpaperPage extends StatefulWidget {
 
 class _AddWallpaperPageState extends State<AddWallpaperPage> {
   File _image;
+
+  final ImageLabeler labeler = FirebaseVision.instance.imageLabeler();
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final Firestore _db = Firestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+
+  bool _isUploading = false;
+  bool _isCompletedUploading = false;
+
+  List<ImageLabel> detectedLabel;
+  List<String> labelInString = [];
+
+  @override
+  void dispose() {
+    labeler.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +51,34 @@ class _AddWallpaperPageState extends State<AddWallpaperPage> {
                     ? Image.file(_image)
                     : Image(image: AssetImage("assets/placeholder.jpg")),
               ),
-              Text("Click on Image to upload wallpaper")
+              SizedBox(
+                height: 5,
+              ),
+              Text("Click on Image to upload wallpaper"),
+              SizedBox(
+                height: 15,
+              ),
+              detectedLabel != null
+                  ? Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Wrap(
+                        spacing: 10,
+                        children: detectedLabel.map((label) {
+                          return Chip(label: Text(label.text));
+                        }).toList(),
+                      ),
+                    )
+                  : Container(),
+              SizedBox(height: 30),
+              if (_isUploading) ...[Text('Iploading wallpaper...')],
+              if (_isCompletedUploading) ...[Text("Upload Completed...")],
+              SizedBox(height: 30),
+              RaisedButton(
+                onPressed: () {
+                  _uploadWallpaper();
+                },
+                child: Text("Upload Wallpaper"),
+              )
             ],
           ),
         ),
@@ -37,8 +88,72 @@ class _AddWallpaperPageState extends State<AddWallpaperPage> {
 
   void _loadImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+
+    final FirebaseVisionImage visionImage = FirebaseVisionImage.fromFile(image);
+
+    List<ImageLabel> labels = await labeler.processImage(visionImage);
+
+    labelInString = [];
+    for (var label in labels) {
+      labelInString.add(label.text);
+    }
+
     setState(() {
+      detectedLabel = labels;
       _image = image;
     });
+  }
+
+  void _uploadWallpaper() async {
+    if (_image != null) {
+      String fileName = path.basename(_image.path);
+      print(fileName);
+
+      FirebaseUser user = await _auth.currentUser();
+      String uid = user.uid;
+
+      StorageUploadTask task = _storage
+          .ref()
+          .child("wallpapers")
+          .child(uid)
+          .child(fileName)
+          .putFile(_image);
+
+      task.events.listen((event) {
+        if (event.type == StorageTaskEventType.progress) {
+          setState(() {
+            _isUploading = true;
+          });
+        }
+        if (event.type == StorageTaskEventType.success) {
+          setState(() {
+            _isCompletedUploading = true;
+            _isUploading = false;
+          });
+          event.snapshot.ref.getDownloadURL().then((url) {
+            Navigator.of(context).pop();
+          });
+        }
+      });
+    } else {
+      showDialog(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30)),
+              title: Text("Error"),
+              content: Text('Select image to upload...'),
+              actions: <Widget>[
+                RaisedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("Ok"),
+                )
+              ],
+            );
+          });
+    }
   }
 }
