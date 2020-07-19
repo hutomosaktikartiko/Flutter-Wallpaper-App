@@ -1,5 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:wallyapp/config/config.dart';
+import 'package:wallyapp/pages/wallpaper_detail_page.dart';
 
 class FavoritePage extends StatefulWidget {
   @override
@@ -7,16 +13,26 @@ class FavoritePage extends StatefulWidget {
 }
 
 class _FavoritePageState extends State<FavoritePage> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final Firestore _db = Firestore.instance;
+
+  FirebaseUser user;
+
+  @override
+  void initState() {
+    super.initState();
+    _getUser();
+  }
+
+  void _getUser() async {
+    FirebaseUser u = await _auth.currentUser();
+    setState(() {
+      user = u;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    var image = [
-      "https://images.unsplash.com/photo-1540071870804-6264aa727cf7?ixlib=rb-1.2.1&auto=format&fit=crop&w=376&q=80",
-      "https://images.unsplash.com/photo-1594905103927-de6aacc5c9d8?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
-      "https://images.unsplash.com/photo-1542641197-cdc5b5d1923f?ixlib=rb-1.2.1&auto=format&fit=crop&w=401&q=80",
-      "https://images.unsplash.com/photo-1593106578502-27fa8479d060?ixlib=rb-1.2.1&auto=format&fit=crop&w=375&q=80",
-      "https://images.unsplash.com/photo-1594878323962-561fbd6357d9?ixlib=rb-1.2.1&auto=format&fit=crop&w=334&q=80",
-      "https://images.unsplash.com/photo-1594878323863-3781779efca6?ixlib=rb-1.2.1&auto=format&fit=crop&w=334&q=80",
-    ];
     return SingleChildScrollView(
       child: Container(
         child: Column(
@@ -36,21 +52,63 @@ class _FavoritePageState extends State<FavoritePage> {
                     color: Colors.grey),
               ),
             ),
-            StaggeredGridView.countBuilder(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              staggeredTileBuilder: (int index) => StaggeredTile.fit(1),
-              itemCount: image.length,
-              crossAxisSpacing: 20,
-              mainAxisSpacing: 20,
-              padding: EdgeInsets.symmetric(horizontal: 15),
-              itemBuilder: (ctx, index) {
-                return ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image(image: NetworkImage(image[index])));
-              },
-            ),
+            if (user != null) ...[
+              StreamBuilder(
+                  stream: _db
+                      .collection("users")
+                      .document(user.uid)
+                      .collection("favorites")
+                      .orderBy("date", descending: true)
+                      .snapshots(),
+                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.hasData) {
+                      return StaggeredGridView.countBuilder(
+                        crossAxisCount: 2,
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        staggeredTileBuilder: (int index) =>
+                            StaggeredTile.fit(1),
+                        itemCount: snapshot.data.documents.length,
+                        crossAxisSpacing: 20,
+                        mainAxisSpacing: 20,
+                        padding: EdgeInsets.symmetric(horizontal: 15),
+                        itemBuilder: (ctx, index) {
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => WallpaperDetailPage(
+                                            data:
+                                                snapshot.data.documents[index],
+                                          )));
+                            },
+                            child: Hero(
+                              tag: snapshot.data.documents[index].data['url'],
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                // child: Image(image: NetworkImage(image[index]))
+                                child: CachedNetworkImage(
+                                    placeholder: (ctx, url) => Image(
+                                        image: AssetImage(
+                                            "assets/placeholder.jpg")),
+                                    imageUrl: snapshot
+                                        .data.documents[index].data['url']),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }
+                    return SpinKitChasingDots(
+                      color: primaryColor,
+                      size: 50,
+                    );
+                  }),
+            ],
+            SizedBox(
+              height: 50,
+            )
           ],
         ),
       ),

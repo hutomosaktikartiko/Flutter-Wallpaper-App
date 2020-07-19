@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_tabs/flutter_custom_tabs.dart';
 import 'package:wallyapp/config/config.dart';
@@ -13,6 +14,9 @@ class WallpaperDetailPage extends StatefulWidget {
 }
 
 class _WallpaperDetailPageState extends State<WallpaperDetailPage> {
+  final Firestore _db = Firestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   @override
   Widget build(BuildContext context) {
     List<dynamic> tags = widget.data["tags"].toList();
@@ -61,7 +65,7 @@ class _WallpaperDetailPageState extends State<WallpaperDetailPage> {
                       label: Text("Share"),
                     ),
                     RaisedButton.icon(
-                      onPressed: () {},
+                      onPressed: _addToFavorite,
                       icon: Icon(Icons.favorite_border),
                       label: Text("Favorite"),
                     ),
@@ -80,5 +84,18 @@ class _WallpaperDetailPageState extends State<WallpaperDetailPage> {
     } catch (e) {
       print(e);
     }
+  }
+
+  void _addToFavorite() async {
+    FirebaseUser user = await _auth.currentUser();
+
+    String uid = user.uid;
+
+    _db
+        .collection("users")
+        .document(uid)
+        .collection("favorites")
+        .document(widget.data.documentID)
+        .setData(widget.data.data);
   }
 }
