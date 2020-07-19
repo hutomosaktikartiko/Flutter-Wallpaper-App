@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_tabs/flutter_custom_tabs.dart';
 import 'package:wallyapp/config/config.dart';
@@ -58,7 +59,7 @@ class _WallpaperDetailPageState extends State<WallpaperDetailPage> {
                       label: Text("Get wallpaper"),
                     ),
                     RaisedButton.icon(
-                      onPressed: () {},
+                      onPressed: _createDynamicLink,
                       icon: Icon(
                         Icons.share,
                       ),
@@ -97,5 +98,22 @@ class _WallpaperDetailPageState extends State<WallpaperDetailPage> {
         .collection("favorites")
         .document(widget.data.documentID)
         .setData(widget.data.data);
+  }
+
+  void _createDynamicLink() async {
+    DynamicLinkParameters dynamicLinkParameters = DynamicLinkParameters(
+        uriPrefix: "https://walyapp.page.link",
+        link: Uri.parse(widget.data.documentID),
+        androidParameters: AndroidParameters(
+            packageName: "com.example.wallyapp", minimumVersion: 0),
+        socialMetaTagParameters: SocialMetaTagParameters(
+            title: "WalllyApp",
+            description: "An app for cool wallpapers",
+            imageUrl: Uri.parse(widget.data["url"])));
+
+    Uri uri = await dynamicLinkParameters.buildUrl();
+
+    String url = uri.toString();
+    print(url);
   }
 }
