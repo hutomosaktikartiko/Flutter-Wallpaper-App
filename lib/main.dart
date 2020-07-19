@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:wallyapp/config/config.dart';
@@ -70,7 +71,24 @@ class _MainPageState extends State<MainPage> {
     });
 
     _firebaseMessaging.subscribeToTopic("promotion");
+
+    this.initDynamicLinks();
+
     super.initState();
+  }
+
+  void initDynamicLinks() async {
+    FirebaseDynamicLinks.instance.onLink(
+        onSuccess: (PendingDynamicLinkData dynamicLink) async {
+      final Uri deepLink = dynamicLink?.link;
+
+      if (deepLink != null) {
+        print(deepLink);
+      }
+    }, onError: (OnLinkErrorException e) async {
+      print('onLinkError');
+      print(e.message);
+    });
   }
 
   void _showDialog({String title, String body}) {

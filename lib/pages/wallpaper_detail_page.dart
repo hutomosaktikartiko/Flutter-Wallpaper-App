@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_tabs/flutter_custom_tabs.dart';
+import 'package:share/share.dart';
 import 'package:wallyapp/config/config.dart';
 
 class WallpaperDetailPage extends StatefulWidget {
@@ -115,5 +116,7 @@ class _WallpaperDetailPageState extends State<WallpaperDetailPage> {
 
     String url = uri.toString();
     print(url);
+
+    Share.share(url);
   }
 }
